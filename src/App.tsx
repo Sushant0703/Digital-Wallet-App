@@ -1,38 +1,40 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
-import { TransactionProvider } from './context/TransactionContext';
 
-// Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { TransactionsProvider } from "@/hooks/useTransactions";
 
-// Components
-import Navbar from './components/Navbar';
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
 
-function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <TransactionProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Navbar />
-            <main>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-              </Routes>
-            </main>
-          </div>
-          <Toaster position="top-right" />
-        </TransactionProvider>
-      </AuthProvider>
-    </Router>
-  );
-}
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <TransactionsProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TransactionsProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

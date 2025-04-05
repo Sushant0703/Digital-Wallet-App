@@ -1,137 +1,103 @@
-import { useState, useContext } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { toast } from 'react-hot-toast';
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/Navbar";
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isAuthenticated, login } = useContext(AuthContext);
+  const { login } = useAuth();
+  const { toast } = useToast();
 
-  const { email, password } = formData;
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
+    // Validate all fields are filled
     if (!email || !password) {
-      toast.error('Please provide both email and password');
+      toast({
+        title: "Error",
+        description: "Email and password are required",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsSubmitting(true);
-
     try {
       await login(email, password);
-      toast.success('Login successful');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'An unknown error occurred';
-      toast.error(errorMessage);
+      // Login redirects to dashboard in the useAuth hook
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login Failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Redirect if logged in
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" />;
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to Fast Pay
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {isSubmitting ? (
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                </span>
-              ) : null}
-              Sign in
-            </button>
-          </div>
-        </form>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Login to your account</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Logging in..." : "Login"}
+              </Button>
+              <div className="text-center mt-4">
+                <p>
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="text-primary hover:underline">
+                    Create one
+                  </Link>
+                </p>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
